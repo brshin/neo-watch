@@ -2,7 +2,7 @@
 
 Full-stack app for browsing near-Earth objects from NASA’s NeoWs API and saving authenticated favorites (with optional notes) to MongoDB.
 
-**[Live demo](https://asteroid-tracker-neo.vercel.app/)**
+**[Live demo](https://neo-watch-asteroid.vercel.app/)**
 
 ![Guest catalog view with today’s NEOs, approach metrics, and local vault](docs/catalog-guest.jpg)
 
