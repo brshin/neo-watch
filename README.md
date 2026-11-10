@@ -1,4 +1,4 @@
-# Asteroid Tracker
+# NeoWatch
 
 Full-stack app for browsing near-Earth objects from NASA’s NeoWs API and saving authenticated favorites (with optional notes) to MongoDB.
 
@@ -45,7 +45,7 @@ Browser (React + Clerk session, or guest localStorage vault)
 ## Project structure
 
 ```
-asteroid-tracker/
+neowatch/
 ├── docs/              # Screenshots and docs assets
 ├── frontend/          # Vite + React app
 │   ├── .env.example

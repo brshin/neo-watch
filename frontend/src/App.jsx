@@ -4,8 +4,8 @@ import { useAuth } from "@clerk/clerk-react";
 import AsteroidMark, { variantFromName } from './AsteroidMark.jsx';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
-const GUEST_SESSION_KEY = 'asteroid-tracker-guest';
-const LOCAL_VAULT_KEY = 'asteroid-tracker-guest-vault';
+const GUEST_SESSION_KEY = 'neowatch-guest';
+const LOCAL_VAULT_KEY = 'neowatch-guest-vault';
 
 function readGuestFlag() {
     try {
@@ -537,11 +537,11 @@ function App() {
                         className="font-display text-sm font-bold tracking-[0.18em] uppercase text-ink transition-colors hover:text-signal md:text-base"
                         aria-label="Back to welcome"
                     >
-                        Asteroid Tracker
+                        NeoWatch
                     </button>
                 ) : (
                     <p className="font-display text-sm font-bold tracking-[0.18em] uppercase text-ink md:text-base">
-                        Asteroid Tracker
+                        NeoWatch
                     </p>
                 )}
 
@@ -575,9 +575,9 @@ function App() {
                             Near-Earth catalog
                         </p>
                         <h1 className="font-display text-[clamp(2.5rem,6vw,4.75rem)] font-extrabold leading-[0.95] tracking-[-0.04em] text-ink">
-                            Asteroid
+                            Neo
                             <br />
-                            Tracker
+                            Watch
                         </h1>
                         <p className="mt-5 max-w-md text-base leading-relaxed text-ink-soft md:mt-6">
                             Today&apos;s near-Earth objects from NASA NeoWs — browse as a guest, or sign in to keep a private watch list.

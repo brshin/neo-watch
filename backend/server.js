@@ -150,7 +150,7 @@ app.post('/asteroids/favorites', ClerkExpressRequireAuth(), async (req, res) => 
 });
 
 app.get('/', (req, res) => {
-    res.json({ message: "Houston, the Asteroid Tracker server is online!" });
+    res.json({ message: "Houston, the NeoWatch server is online!" });
 });
 
 app.get('/asteroids', async (req, res) => {
