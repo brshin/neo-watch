@@ -139,9 +139,8 @@ Open the Vite URL shown in the terminal (usually `http://localhost:5173`).
 
 On the free Render tier, the API may take up to ~30 seconds to wake from sleep on the first request after idle. The UI shows a loading state for that case.
 
-## Known limitations
+## Notes
 
 - The NASA API key is currently hardcoded in `backend/server.js`; for production it should be moved to an environment variable.
-- Duplicate favorites are rejected per user when the same `(userId, name)` already exists (MongoDB compound unique index).
 - Older favorites created before the expanded NEO schema may be missing approach/diameter metadata until re-favorited.
 - There is no automated test suite yet (`backend` `npm test` is a placeholder).
