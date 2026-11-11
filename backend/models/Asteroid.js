@@ -3,8 +3,7 @@ const mongoose = require('mongoose');
 const asteroidSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: true,
-        unique: true
+        required: true
     },
     neoId: {
         type: String,
@@ -52,5 +51,7 @@ const asteroidSchema = new mongoose.Schema({
     },
     userId: { type: String, required: true }
 });
+
+asteroidSchema.index({ userId: 1, name: 1 }, { unique: true });
 
 module.exports = mongoose.model('Asteroid', asteroidSchema);

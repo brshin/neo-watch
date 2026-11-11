@@ -40,7 +40,7 @@ Browser (React + Clerk session, or guest localStorage vault)
 - Clerk issues a session on the client; protected API calls send `Authorization: Bearer <token>` from `getToken()`.
 - Favorites handlers read `req.auth.userId` and include it in every MongoDB query/write.
 
-**Note:** Asteroid `name` is globally unique in the schema, so two users cannot favorite the same asteroid name. Favorites queries are still filtered by `userId`.
+**Note:** Favorites are unique per user on `(userId, name)` — different users can favorite the same asteroid independently.
 
 ## Project structure
 
@@ -142,6 +142,6 @@ On the free Render tier, the API may take up to ~30 seconds to wake from sleep o
 ## Known limitations
 
 - The NASA API key is currently hardcoded in `backend/server.js`; for production it should be moved to an environment variable.
-- Duplicate favorites are rejected when the asteroid `name` already exists globally (MongoDB unique index), not only for the current user.
+- Duplicate favorites are rejected per user when the same `(userId, name)` already exists (MongoDB compound unique index).
 - Older favorites created before the expanded NEO schema may be missing approach/diameter metadata until re-favorited.
 - There is no automated test suite yet (`backend` `npm test` is a placeholder).
