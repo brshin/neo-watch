@@ -1,6 +1,6 @@
 # NeoWatch
 
-Full-stack app for browsing near-Earth objects from NASA’s NeoWs API and saving authenticated favorites (with optional notes) to MongoDB.
+Browse today’s near-Earth objects from NASA NeoWs, save a private watch list, and keep per-asteroid notes — as a guest on-device, or signed in with Clerk so favorites sync to MongoDB.
 
 **[Live demo](https://neo-watch-asteroid.vercel.app/)**
 
@@ -8,10 +8,10 @@ Full-stack app for browsing near-Earth objects from NASA’s NeoWs API and savin
 
 ## Features
 
-- Browse today’s near-Earth asteroids with approach time, miss distance, velocity, magnitude, diameter range, and JPL SBDB links
-- Continue as guest to use the full catalog and a device-local vault; sign in with Clerk to sync favorites to MongoDB
-- Save / remove favorites and edit a per-asteroid note (“Commander’s Log”)
-- Favorites CRUD is scoped to the authenticated Clerk `userId`
+- **Today’s NEO catalog** — approach time, miss distance, relative velocity, absolute magnitude, diameter range, PHA / Sentry flags, and JPL SBDB links
+- **Guest → account path** — full catalog without signing in; device-local vault in `localStorage`; on sign-in, local favorites (and notes) sync to the API
+- **Authenticated favorites** — create, list, update notes (“Commander’s Log”), and delete, with Clerk JWT on every mutating/read favorites call
+- **Per-user isolation** — queries and writes filter by Clerk `userId`; uniqueness is enforced on `(userId, name)` so users can favorite the same NEO independently
 
 ## Tech stack
 
@@ -35,12 +35,11 @@ Browser (React + Clerk session, or guest localStorage vault)
                                     └──► MongoDB (scoped by userId)
 ```
 
-- The **frontend never calls NASA directly**. It requests your Express API; the server proxies NeoWs.
-- Guests can favorite locally; signing in syncs the local vault to the API when possible.
-- Clerk issues a session on the client; protected API calls send `Authorization: Bearer <token>` from `getToken()`.
-- Favorites handlers read `req.auth.userId` and include it in every MongoDB query/write.
+**Design choices**
 
-**Note:** Favorites are unique per user on `(userId, name)` — different users can favorite the same asteroid independently.
+- **Server-side NASA proxy** — the browser never calls NeoWs; Express fetches and shapes the feed so the NASA key stays off the client.
+- **Guest vault + sync** — guests favorite locally; after Clerk sign-in, the client posts the vault to `/asteroids/favorites` (and PATCHes notes) before loading the server list.
+- **Auth-scoped data** — favorites handlers take `userId` from `req.auth` and use it on every MongoDB read/write; a compound unique index on `(userId, name)` blocks duplicate favorites per user without blocking other users.
 
 ## Project structure
 
@@ -60,27 +59,25 @@ neowatch/
 
 Base URL locally: `http://localhost:3000` (or `PORT` if set)
 
-### Public / proxy routes
+### Catalog (public proxy)
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
 | `GET` | `/` | Health check |
-| `GET` | `/asteroids` | Today’s NEOs from NASA NeoWs (proxied; expanded fields) |
-| `GET` | `/asteroids/search?date=YYYY-MM-DD` | NEOs for a given date (proxied) |
-| `GET` | `/asteroids/:id` | Single NEO by NASA ID (proxied) |
+| `GET` | `/asteroids` | Today’s NEOs from NASA NeoWs (normalized fields) |
+| `GET` | `/asteroids/search?date=YYYY-MM-DD` | NEOs for a given date |
+| `GET` | `/asteroids/:id` | Single NEO by NASA ID |
 
-The search and `:id` routes exist on the server but are not used by the current UI.
+Catalog payloads include `id`, `name`, diameter min/max, PHA flag, absolute magnitude, JPL URL, close-approach time, miss distance, relative velocity, and Sentry flag. The UI uses today’s feed; date and ID routes are available on the API.
 
-Catalog objects include `id`, `name`, diameter min/max, PHA flag, absolute magnitude, JPL URL, close-approach time, miss distance, relative velocity, and Sentry flag.
+### Favorites (Clerk JWT required)
 
-### Authenticated favorites routes
-
-Require a valid Clerk JWT in the `Authorization: Bearer` header.
+`Authorization: Bearer <token>` on all routes below.
 
 | Method | Endpoint | Description | Typical responses |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/asteroids/favorites` | List the signed-in user’s favorites | `200`, `401`, `500` |
-| `POST` | `/asteroids/favorites` | Save a favorite (name, PHA, and optional NEO metadata) | `201`, `400`, `401`, `500` |
+| `POST` | `/asteroids/favorites` | Save a favorite (name, PHA, optional NEO metadata) | `201`, `400`, `401`, `500` |
 | `PATCH` | `/asteroids/favorites/:name` | Update `note` for that user’s favorite | `200`, `401`, `404`, `500` |
 | `DELETE` | `/asteroids/favorites/:name` | Remove that user’s favorite | `200`, `401`, `404`, `500` |
 
@@ -93,8 +90,6 @@ Require a valid Clerk JWT in the `Authorization: Bearer` header.
 - A MongoDB Atlas (or local MongoDB) connection string
 
 ### 1. Environment variables
-
-Copy the example files and fill in values:
 
 ```bash
 cp frontend/.env.example frontend/.env
@@ -117,7 +112,7 @@ cp backend/.env.example backend/.env
 
 ### 2. Install and run
 
-Terminal 1 — API (listens on port **3000** by default, or `PORT`):
+Terminal 1 — API (port **3000** by default, or `PORT`):
 
 ```bash
 cd backend
@@ -135,12 +130,7 @@ npm run dev
 
 Open the Vite URL shown in the terminal (usually `http://localhost:5173`).
 
-### Demo note
-
-On the free Render tier, the API may take up to ~30 seconds to wake from sleep on the first request after idle. The UI shows a loading state for that case.
-
 ## Notes
 
-- The NASA API key is currently hardcoded in `backend/server.js`; for production it should be moved to an environment variable.
-- Older favorites created before the expanded NEO schema may be missing approach/diameter metadata until re-favorited.
-- There is no automated test suite yet (`backend` `npm test` is a placeholder).
+- NASA NeoWs is called only from Express (key never shipped to the browser). For production hardening, load the key from an environment variable rather than the source file.
+- Free Render cold starts can take ~30s after idle; the UI shows a loading state for that case.
